@@ -170,11 +170,16 @@ private struct AttributeOptionButton: View {
                     .font(GoatFont.label(13, weight: .heavy))
                     .tracking(1)
                     .foregroundStyle(GoatTheme.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
                 stateCaption
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
             }
-            Spacer(minLength: 6)
+            .layoutPriority(1)
+            Spacer(minLength: 4)
             RatingMeter(value: option.value)
-                .frame(width: 54)
+                .frame(minWidth: 24, maxWidth: 54)
             Text("\(option.value)")
                 .font(GoatFont.number(15))
                 .foregroundStyle(GoatTheme.textPrimary)

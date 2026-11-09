@@ -126,7 +126,7 @@ public struct FighterBuilderView: View {
                 fighterPanel(style: .list)
             }
             .scrollIndicators(.hidden)
-            .frame(width: min(340, width * 0.28))
+            .frame(width: min(340, width * 0.31))
 
             board
                 .padding(16)
@@ -147,7 +147,7 @@ public struct FighterBuilderView: View {
                 primaryAction
                 DisclaimerFooter()
             }
-            .frame(width: min(280, width * 0.24))
+            .frame(width: min(280, width * 0.22))
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 16)
