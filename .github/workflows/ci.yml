@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test-screenshots:
+    name: Build, test & screenshots
+    runs-on: macos-15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 16
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+
+      - name: Pick simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          d = json.load(sys.stdin)["devices"]
+          m = sorted((r, x["udid"]) for r, xs in d.items() if "iOS" in r for x in xs if x["name"].startswith("iPhone"))
+          print(m[-1][1])')
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Unit tests (domain)
+        working-directory: Packages/BuildAGoatKit
+        run: |
+          xcodebuild test \
+            -scheme BuildAGoatKit-Package \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            > ../../test.log 2>&1 || { tail -150 ../../test.log; exit 1; }
+          grep -E "passed|failed|Executed|✔|✘" ../../test.log | tail -60
+
+      - name: Build app
+        run: |
+          xcodebuild build \
+            -project BuildAGoat.xcodeproj \
+            -scheme BuildAGoat \
+            -configuration Debug \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            > build.log 2>&1 || { grep -E "error:" build.log | head -60; tail -80 build.log; exit 1; }
+          grep -E "warning: |BUILD SUCCEEDED" build.log | sort -u | tail -40
+
+      - name: Capture screenshots
+        run: |
+          chmod +x scripts/take-screenshots.sh
+          scripts/take-screenshots.sh build/Build/Products/Debug-iphonesimulator/BuildAGoat.app docs/screenshots
+
+      - name: Upload screenshots & logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-and-logs
+          path: |
+            docs/screenshots
+            build.log
+            test.log
+
+      - name: Commit refreshed screenshots
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged"
+          else
+            git commit -m "docs: refresh screenshots [skip ci]"
+            git push
+          fi
