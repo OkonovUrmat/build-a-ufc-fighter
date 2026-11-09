@@ -118,7 +118,7 @@ public final class FighterBuilderViewModel {
             return "Build complete. You can still switch your last pick before simulating."
         case .awaitingSelection:
             let name = session.currentSpin?.fighter.lastName ?? "this fighter"
-            return "Take ONE attribute from \(name). It's locked in for the rest of the game."
+            return "Take ONE attribute from \(name). You can switch it until you spin again."
         case .readyToSpin:
             if spinCount == 0 { return "Spin to draw your first legend." }
             let picked = session.pendingSelection?.attribute.displayName ?? "Your pick"

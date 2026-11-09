@@ -9,9 +9,16 @@ struct BoardLayout {
 
     let size: CGSize
 
+    /// Area actually used: tall, narrow containers (iPad centre panel) are capped
+    /// so the silhouette stays large and connector lines stay short.
+    var frame: CGRect {
+        let height = min(size.height, size.width * 1.35)
+        return CGRect(x: 0, y: (size.height - height) / 2, width: size.width, height: height)
+    }
+
     var cardSize: CGSize {
         let width = min(max(size.width * 0.29, 98), 156)
-        let height = min(max((size.height - 4 * 8) / 5, 54), 80)
+        let height = min(max((frame.height - 4 * 8) / 5, 54), 80)
         return CGSize(width: width, height: height)
     }
 
@@ -23,8 +30,8 @@ struct BoardLayout {
         let left = isLeft(attribute)
         let column = left ? Self.leftColumn : Self.rightColumn
         let index = CGFloat(column.firstIndex(of: attribute) ?? 0)
-        let step = (size.height - cardSize.height) / CGFloat(max(column.count - 1, 1))
-        let y = cardSize.height / 2 + index * step
+        let step = (frame.height - cardSize.height) / CGFloat(max(column.count - 1, 1))
+        let y = frame.minY + cardSize.height / 2 + index * step
         let x = left ? cardSize.width / 2 : size.width - cardSize.width / 2
         return CGPoint(x: x, y: y)
     }
@@ -37,7 +44,7 @@ struct BoardLayout {
 
     var silhouetteRect: CGRect {
         let inset = cardSize.width + 14
-        let available = CGRect(x: inset, y: 4, width: max(size.width - inset * 2, 40), height: size.height - 8)
+        let available = CGRect(x: inset, y: frame.minY + 4, width: max(size.width - inset * 2, 40), height: frame.height - 8)
         return SilhouetteGeometry.fittedRect(in: available)
     }
 

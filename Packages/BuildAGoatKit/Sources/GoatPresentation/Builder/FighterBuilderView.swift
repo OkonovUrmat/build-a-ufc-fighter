@@ -21,7 +21,7 @@ public struct FighterBuilderView: View {
             VStack(spacing: 0) {
                 header
                 if proxy.size.width >= 820 {
-                    wideLayout(height: proxy.size.height)
+                    wideLayout(width: proxy.size.width)
                 } else {
                     compactLayout(height: proxy.size.height)
                 }
@@ -120,13 +120,13 @@ public struct FighterBuilderView: View {
         }
     }
 
-    private func wideLayout(height: CGFloat) -> some View {
+    private func wideLayout(width: CGFloat) -> some View {
         HStack(alignment: .top, spacing: 16) {
             ScrollView {
                 fighterPanel(style: .list)
             }
             .scrollIndicators(.hidden)
-            .frame(width: 340)
+            .frame(width: min(340, width * 0.28))
 
             board
                 .padding(16)
@@ -147,7 +147,7 @@ public struct FighterBuilderView: View {
                 primaryAction
                 DisclaimerFooter()
             }
-            .frame(width: 280)
+            .frame(width: min(280, width * 0.24))
         }
         .padding(.horizontal, 20)
         .padding(.bottom, 16)

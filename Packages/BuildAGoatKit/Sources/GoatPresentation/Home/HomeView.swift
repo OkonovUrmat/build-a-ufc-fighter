@@ -72,7 +72,7 @@ struct HomeView: View {
 private struct HowItWorks: View {
     private let steps: [(icon: String, title: String, text: String)] = [
         ("arrow.triangle.2.circlepath", "SPIN", "A random division, then a random legend from it."),
-        ("hand.tap.fill", "DRAFT", "Take exactly one attribute. Filled slots are permanent."),
+        ("hand.tap.fill", "DRAFT", "Take one attribute. Switch freely until your next spin locks it in."),
         ("figure.boxing", "BUILD", "Fill all 10 slots, then simulate a fictional career."),
     ]
 
